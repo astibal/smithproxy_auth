@@ -55,7 +55,7 @@ if(UNIX)
     install(CODE "MESSAGE(\" +----------------------------------------------------------------------------------------+\")")
     install(CODE "MESSAGE(\" | Auth component installation complete!                                                  |\")")
     install(CODE "MESSAGE(\" +----------------------------------------------------------------------------------------|\")")
-    install(CODE "MESSAGE(\" |                                                                                        |\")")
+    install(CODE "MESSAGE(\" |   You need restart smithproxy to detect portal components are present                  |\")")
     install(CODE "MESSAGE(\" +----------------------------------------------------------------------------------------+\")")
 
 endif()
