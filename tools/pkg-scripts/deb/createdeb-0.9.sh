@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 ORIG_DIR=`pwd`
+PROJECT=smithproxy_auth
 
 # === LOAD DEFAULTS ====
 
@@ -17,17 +18,17 @@ if [ "${HTTP_CHECK_PATH}" == "" ]; then
 fi
 
 if [ "${SO_BRANCH}" == "" ]; then
-    SO_BRANCH="master"
+    SO_BRANCH="main"
 fi
 
 if [ "${SX_BRANCH}" == "" ]; then
-    SX_BRANCH="master"
+    SX_BRANCH="main"
 fi
 
 DEBIAN_DIR="debian-0.9"
 
 
-CUR_DIR=/tmp/smithproxy_auth_build
+CUR_DIR=/tmp/${PROJECT}_build
 mkdir ${CUR_DIR}
 cp *.sh ${CUR_DIR}
 cp -r ${DEBIAN_DIR} ${CUR_DIR}/debian
@@ -47,8 +48,8 @@ function ctrl_c() {
 function cleanup () {
     (
     rm ${CUR_DIR}/smithoproxy_*.orig.tar.gz
-    rm -rf ${CUR_DIR}/smithproxy_auth_*
-    rm -rf ${CUR_DIR}/smithproxy_auth-*
+    rm -rf ${CUR_DIR}/${PROJECT}_*
+    rm -rf ${CUR_DIR}/${PROJECT}-*
     rm -rf ${CUR_DIR}/socle*
     ) > /dev/null 2>&1
 
@@ -56,17 +57,16 @@ function cleanup () {
 
 # download source from git
 # @param1 - socle branch
-# @param2 - smithproxy_auth branch
+# @param2 - ${PROJECT} branch
 function sync() {
-    SOCLE_BRANCH=$1
-    SMITHPROXY_BRANCH=$2
+    SMITHPROXY_BRANCH=$1
 
     O=`pwd`
     cd $CUR_DIR
 
     cleanup
 
-    git clone --recursive http://github.com/astibal/smithproxy_auth.git smithproxy_auth
+    git clone --recursive http://github.com/astibal/${PROJECT}.git -b $SMITHPROXY_BRANCH ${PROJECT}
 
     cd $O
 }
@@ -101,14 +101,14 @@ safe_upload() {
 ## get source !!
 ##
 
-sync $SO_BRANCH $SX_BRANCH
+sync $SX_BRANCH
 
 ##
 ## get proper versions from GIT. We set debian patch-level to distance from
 ## latest --tag.
 ##
 
-cd smithproxy_auth
+cd ${PROJECT}
 
 GIT_DESCR=`git describe --tags`
 GIT_TAG=`echo ${GIT_DESCR} | awk -F'-' '{ print $1 }'`
@@ -120,13 +120,13 @@ if [ "${GIT_PATCH_DIST}" == "" ]; then
 fi
 cd ..
 
-mv smithproxy_auth smithproxy_auth-${GIT_TAG}
-ln -s smithproxy_auth-${GIT_TAG} smithproxy_auth_src
+mv ${PROJECT} ${PROJECT}-${GIT_TAG}
+ln -s ${PROJECT}-${GIT_TAG} ${PROJECT}_src
 
 # create tarball for build
-tar cfz smithproxy_auth_${GIT_TAG}.orig.tar.gz --exclude-vcs smithproxy_auth-${GIT_TAG}
+tar cfz ${PROJECT}_${GIT_TAG}.orig.tar.gz --exclude-vcs ${PROJECT}-${GIT_TAG}
 
-cd smithproxy_auth_src
+cd ${PROJECT}_src
 
 
 # initialize debian versioning
@@ -140,7 +140,7 @@ cd $CUR_DIR
 
 # get major version and guess linux distro
 VER_MAJ=`echo $VER | awk -F. '{ print $1"."$2; }'`
-DEB_DIR="smithproxy_auth-$VER"
+DEB_DIR="${PROJECT}-$VER"
 DISTRO=`./distro.sh`
 
 echo "Major version: $VER_MAJ, debian directory set to $DEB_DIR"
@@ -186,14 +186,14 @@ cd $CUR_DIR
 #FIXME: archive contains cmake temp files - archive is too big.
 #echo "Archiving"
 #mkdir archives
-#tar cvfz archives/smithproxy_auth_${VER}-${DEB_CUR}_${DISTRO}_build.tar.gz --exclude-vcs -- smithproxy_auth_${VER}/ smithproxy_auth-${VER}/ socle/
+#tar cvfz archives/${PROJECT}_${VER}-${DEB_CUR}_${DISTRO}_build.tar.gz --exclude-vcs -- ${PROJECT}_${VER}/ ${PROJECT}-${VER}/ socle/
 
 echo "Saving changelog"
-cp -f smithproxy_auth-${VER}/debian/changelog debian/
+cp -f ${PROJECT}-${VER}/debian/changelog debian/
 
 if [ "$UPLOAD_STREAMLINE_CHANGELOG" == "Y" ]; then
     URL="${UPLOAD_URL}/${VER_MAJ}/changelog"
-    FILE=smithproxy_auth-${VER}/debian/changelog
+    FILE=${PROJECT}-${VER}/debian/changelog
 
     if [ "$FTP_UPLOAD_PWD" == "" ]; then
         echo "password was not provided - no uploads"
@@ -213,7 +213,7 @@ if [ "$FTP_UPLOAD_PWD" == "" ]; then
 else
 
     echo "File(s) being uploaded now."
-    DEB_FILE=smithproxy_auth_${VER}-${DEB_CUR}_${ARCH}.deb
+    DEB_FILE=${PROJECT}_${VER}-${DEB_CUR}_${ARCH}.deb
 
     if [ "${GIT_PATCH_DIST}" != "0" ]; then
         DEB_PATH="${UPLOAD_URL}/${VER_MAJ}/${DISTRO}/snapshots"
@@ -232,17 +232,17 @@ else
     safe_upload $DEB_FILE.sha256 $DEB_URL.sha256
 
     # overwrite files if thy exist
-    safe_upload smithproxy_auth-${VER}/debian/changelog ${DEB_PATH}/smithproxy_auth_${VER}-${DEB_CUR}.changelog
+    safe_upload ${PROJECT}-${VER}/debian/changelog ${DEB_PATH}/${PROJECT}_${VER}-${DEB_CUR}.changelog
     #upload README ${DEB_PATH}/README
 
     # upload Release_Notes from src root
-    upload /tmp/smithproxy_auth_build/smithproxy_auth_src/Release_Notes.md "${UPLOAD_URL}/${VER_MAJ}/Release_Notes.md"
+    upload /tmp/${PROJECT}_build/${PROJECT}_src/Release_Notes.md "${UPLOAD_URL}/${VER_MAJ}/Release_Notes.md"
 
 
     #### LATEST build overwrite - only for snapshots
     if [ "${GIT_PATCH_DIST}" != "0" ]; then
 
-        DEB_FILE_LATEST=smithproxy_auth_0.9-latest_${ARCH}.deb
+        DEB_FILE_LATEST=${PROJECT}_0.9-latest_${ARCH}.deb
         DEB_URL_LATEST="${DEB_PATH}/$DEB_FILE_LATEST"
 
         # upload latest (always overwrite, rename it)
@@ -251,7 +251,7 @@ else
         # upload latest checksum
         sha256sum $DEB_FILE > $DEB_FILE_LATEST.sha256
         upload $DEB_FILE_LATEST.sha256 $DEB_URL_LATEST.sha256
-        upload smithproxy_auth-${VER}/debian/changelog ${DEB_PATH}/smithproxy_auth_0.9-latest.changelog
+        upload ${PROJECT}-${VER}/debian/changelog ${DEB_PATH}/${PROJECT}_0.9-latest.changelog
 
     fi
 

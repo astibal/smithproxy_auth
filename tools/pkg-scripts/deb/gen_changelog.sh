@@ -1,31 +1,26 @@
 #!/usr/bin/env bash
 
+PROJECT='smithproxy-auth'
 OPATH=`pwd`
 SXPATH=$1
 declare -A components
 declare -A versions
 
 
-SX_LOG="/tmp/sx_log"
-SO_LOG="/tmp/so_log"
+SX_LOG="/tmp/${PROJECT}_log"
 
-components[$SX_LOG]="Smithproxy"
-components[$SO_LOG]="Socle library"
+components[$SX_LOG]="${PROJECT}"
 
 cd $SXPATH
 git log --pretty=format:%s --oneline --output ${SX_LOG}_pre
 versions[$SX_LOG]=`git describe --tags | sed -e 's/-[0-9a-z]*$'//`
 cat ${SX_LOG}_pre | fmt -s --prefix="    " > ${SX_LOG}
 
-cd socle
-git log --pretty=format:%s --oneline --output ${SO_LOG}_pre
-versions[$SO_LOG]=`git describe --tags | sed -e 's/-[0-9a-z]*$'//`
-cat ${SO_LOG}_pre | fmt -s --prefix="    " > ${SO_LOG}
 
-echo "smithproxy (${versions[$SX_LOG]}) unstable; urgency=medium"
+echo "${PROJECT} (${versions[$SX_LOG]}) unstable; urgency=medium"
 echo
 
-for f in ${SX_LOG} ${SO_LOG}; do
+for f in ${SX_LOG}; do
     echo
     echo "    ${components[$f]}-${versions[$f]}"
     echo
