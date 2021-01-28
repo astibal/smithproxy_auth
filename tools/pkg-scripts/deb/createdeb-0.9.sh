@@ -47,7 +47,7 @@ function ctrl_c() {
 # cleanup directory
 function cleanup () {
     (
-    rm ${CUR_DIR}/smithoproxy_*.orig.tar.gz
+    rm ${CUR_DIR}/${PROJECT}*.orig.tar.gz
     rm -rf ${CUR_DIR}/${PROJECT}_*
     rm -rf ${CUR_DIR}/${PROJECT}-*
     rm -rf ${CUR_DIR}/socle*
@@ -124,7 +124,8 @@ mv ${PROJECT} ${PROJECT}-${GIT_TAG}
 ln -s ${PROJECT}-${GIT_TAG} ${PROJECT}_src
 
 # create tarball for build
-tar cfz ${PROJECT}_${GIT_TAG}.orig.tar.gz --exclude-vcs ${PROJECT}-${GIT_TAG}
+TGZ_NAME=`echo $PROJECT | sed -e 's/_/-/g'`
+tar cfz ${TGZ_NAME}_${GIT_TAG}.orig.tar.gz --exclude-vcs ${PROJECT}-${GIT_TAG}
 
 cd ${PROJECT}_src
 
@@ -171,7 +172,7 @@ cp -rv debian $DEB_DIR
 
 echo "Filling changelog based on git log ..."
 
-./gen_changelog.sh smithproxy_src/ > $DEB_DIR/debian/changelog
+./gen_changelog.sh ${PROJECT}_src/ > $DEB_DIR/debian/changelog
 
 echo "cd to $DEB_DIR"
 cd $DEB_DIR

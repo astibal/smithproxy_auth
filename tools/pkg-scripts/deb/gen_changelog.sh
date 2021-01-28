@@ -19,13 +19,10 @@ cat ${SX_LOG}_pre | fmt -s --prefix="    " > ${SX_LOG}
 
 echo "${PROJECT} (${versions[$SX_LOG]}) unstable; urgency=medium"
 echo
-
-for f in ${SX_LOG}; do
-    echo
-    echo "    ${components[$f]}-${versions[$f]}"
-    echo
-    cat $f | awk '{ print "    * ",$0 }'
-done
+echo
+echo "    ${components[$f]}-${versions[$f]}"
+echo
+cat ${SX_LOG} | awk '{ print "    * ",$0 }'
 
 echo
 echo " -- Support <support@smithproxy.org>  `date -R`"
