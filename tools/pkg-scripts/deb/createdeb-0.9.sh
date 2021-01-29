@@ -25,13 +25,18 @@ if [ "${SX_BRANCH}" == "" ]; then
     SX_BRANCH="main"
 fi
 
+if [ "${FLAVOR}" != "" ]; then
+    FLAVOR="-${FLAVOR}"
+fi
+
+
 DEBIAN_DIR="debian-0.9"
 
 
 CUR_DIR=/tmp/${PROJECT}_build
 mkdir ${CUR_DIR}
 cp *.sh ${CUR_DIR}
-cp -r ${DEBIAN_DIR} ${CUR_DIR}/debian
+cp -r ${DEBIAN_DIR}${FLAVOR} ${CUR_DIR}/debian
 cd ${CUR_DIR}
 ##
 ## trap Ctrl-C, don't continue with script if hit in longer task (ie. make)

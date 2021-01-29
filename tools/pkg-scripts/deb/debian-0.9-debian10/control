@@ -15,10 +15,11 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
                             python3-ldap,
                             python3-posix-ipc,
                             python3-cryptography,
-                            python3-m2crypto,
                             python3-zeep,
-                            python3-lxml
-
+                            python3-lxml,
+                            python3-dev,
+                            libssl-dev,
+                            build-essential, swig
 Description:
  Authentication and portal components for smithproxy.
  Smithproxy is a feature-rich, fast transparent TCP/UDP/TLS proxy.
